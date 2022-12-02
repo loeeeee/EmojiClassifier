@@ -3,8 +3,21 @@ import os
 from PIL import Image
 import numpy as np
 
+class EmojiOutputFormat:
+    @staticmethod
+    def original(image):
+        return image
+    
+    @staticmethod
+    def greyscale(image):
+        return image.convert(mode="L")
+
+    @staticmethod
+    def RGB(image):
+        return image.convert(mode="RGB")
+
 class Emoji:
-    def __init__(self, data_folder: str, company_name: str="", output_size: tuple=(0,0)):
+    def __init__(self, data_folder: str, company_name: str="", output_size: tuple=(0,0), output_format= EmojiOutputFormat.original):
         """
         Takes an company name as an input, load the data from .data folder. The company name is default to the data folder name.
         """
@@ -12,11 +25,13 @@ class Emoji:
         self.name: str = company_name
         self.pic_file_names = self._load()
         self.output_size = output_size
+        self.post_process = output_format
 
         self._index: int = 0
     
     # API
-    
+    def count(self) -> int:
+        return len(self.pic_file_names)
     
     # Subprocess
     def _load(self) -> list:
@@ -35,30 +50,17 @@ class Emoji:
 
         # Read image
         im = Image.open(os.path.join(self.dir, self.pic_file_names[self._index - 1]))
-        if self.output_size == (0,0):
-            pixels = np.array(im.getdata())
-            return pixels
+        im = self.post_process(im)
+        if self.output_size == (0,0) or self.output_size == im.size:
+            pixels = np.array(list(im.getdata()))                
+            # Returns ARGB value
         else:
-            pass
-        return 
+            # Resize before return
+            pixels = np.array(list(im.resize(self.output_size).getdata()))                
+            # Returns ARGB value
+        return pixels, self.pic_file_names[self._index - 1]
 
     def __iter__(self):
         return self
-
-    # Helper
-    @staticmethod
-    def picture_to_list(picture):
-        """
-        Convert the picture to list of RGB value
-        """
-        pass
-
-    @staticmethod
-    def picture_resize(picture, target_size: tuple=(72,72), method: str= "closet neighbor"):
-        """
-        Convert the picture to target size.
-        """
-        pass
-
 
     
