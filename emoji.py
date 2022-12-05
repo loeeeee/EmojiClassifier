@@ -9,7 +9,7 @@ class EmojiOutputFormat:
         return image
     
     @staticmethod
-    def greyscale(image):
+    def grayscale(image):
         return image.convert(mode="L")
 
     @staticmethod
