@@ -28,6 +28,18 @@ def grayscale_and_resize_load():
     X = X/ 255.0
     return X,y
 
+def grayscale_and_resize_load_small():
+    # Read the data
+    DATA_DIR = os.environ["DATA_DIR"]
+    X, y = batch_load(DATA_DIR, {"Facebook": "Meta", "Microsoft": "Microsoft", "Apple": "Apple"}, output_size=(18,18), output_format=EmojiOutputFormat.grayscale)
+    # Transform y
+    y = map_y(y)
+    
+    # Preprocessing the input data
+    # Normalize input vector
+    X = X/ 255.0
+    return X,y
+
 def grayscale_enlarge_and_shrink():
     # Read the data
     DATA_DIR = os.environ["DATA_DIR"]
@@ -58,11 +70,44 @@ def RGB_and_PCA_load():
     X = pca.fit_transform(X)
     return X,y
 
+def RGBA_enlarge_and_shrink():
+    # Read the data
+    DATA_DIR = os.environ["DATA_DIR"]
+    X, y = batch_load(DATA_DIR, {"Facebook": "Meta", "Microsoft": "Microsoft", "Apple": "Apple"}, output_size=(144,144), output_format=EmojiOutputFormat.RGBA)
+    # Transform y
+    y = map_y(y)
+    
+    # Preprocessing the input data
+    # Normalize input vector
+    X = X/ 255.0
+
+    pca = decomposition.PCA(36*36)
+    X = pca.fit_transform(X)
+    return X,y
+
+def RGBA_enlarge_and_shrink_large():
+    # Read the data
+    DATA_DIR = os.environ["DATA_DIR"]
+    X, y = batch_load(DATA_DIR, {"Facebook": "Meta", "Microsoft": "Microsoft", "Apple": "Apple"}, output_size=(216,216), output_format=EmojiOutputFormat.RGBA)
+    # Transform y
+    y = map_y(y)
+    
+    # Preprocessing the input data
+    # Normalize input vector
+    X = X/ 255.0
+
+    pca = decomposition.PCA(36*36)
+    X = pca.fit_transform(X)
+    return X,y
+
 logger.info("Start loading data")
 # Change how you want the data loo like
 # X,y = RGB_and_PCA_load()
 # X,y = grayscale_and_resize_load()
-X,y = grayscale_enlarge_and_shrink()
+# X,y = grayscale_enlarge_and_shrink()
+# X,y = RGBA_enlarge_and_shrink()
+# X,y = grayscale_and_resize_load_small()
+X,y = RGBA_enlarge_and_shrink_large()
 logger.info("Finish loading data")
 
 X_new = X.copy()
