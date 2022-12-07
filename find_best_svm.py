@@ -150,6 +150,7 @@ logger.info("Saving result!")
 while not tasks_that_are_done.empty():
     test_para_res.append(tasks_that_are_done.get())
 
+DATA_DIR = os.environ["DATA_DIR"]
 file = open(os.path.join(DATA_DIR, "SVM_parameter_and_result.json"), "w", encoding="utf-8")
 json.dump(test_para_res, file, indent=4)
 file.close()
