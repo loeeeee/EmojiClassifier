@@ -31,7 +31,7 @@ class Emoji:
         self.output_size = output_size
         self.post_process = output_format
         self.resize_mode = resize_mode
-        
+
         self._index: int = 0
     
     # API
@@ -61,7 +61,7 @@ class Emoji:
             # Returns ARGB value
         else:
             # Resize before return
-            pixels = np.array(list(im.resize(self.output_size, mode=self.resize_mode).getdata()))                
+            pixels = np.array(list(im.resize(self.output_size, resample=self.resize_mode).getdata()))                
             # Returns ARGB value
         return pixels, self.pic_file_names[self._index - 1]
 

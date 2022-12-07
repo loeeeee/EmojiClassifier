@@ -15,6 +15,7 @@ import time
 import queue # imported for using queue.Empty exception
 
 logger = logging.getLogger(__name__)
+
 def grayscale_and_resize_load():
     # Read the data
     DATA_DIR = os.environ["DATA_DIR"]
@@ -59,8 +60,9 @@ def RGB_and_PCA_load():
 
 logger.info("Start loading data")
 # Change how you want the data loo like
-X,y = RGB_and_PCA_load()
+# X,y = RGB_and_PCA_load()
 # X,y = grayscale_and_resize_load()
+X,y = grayscale_enlarge_and_shrink()
 logger.info("Finish loading data")
 
 X_new = X.copy()
