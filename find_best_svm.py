@@ -7,16 +7,39 @@ import random
 import os
 import json
 from tqdm import tqdm
+from sklearn import metrics, decomposition
 
-# Read the data
-DATA_DIR = os.environ["DATA_DIR"]
-X, y = batch_load(DATA_DIR, {"Facebook": "Meta", "Microsoft": "Microsoft", "Apple": "Apple"}, output_size=(36,36), output_format=EmojiOutputFormat.grayscale)
-# Transform y
-y = map_y(y)
 
-# Preprocessing the input data
-# Normalize input vector
-X = X/ 255.0
+def grayscale_and_resize_load():
+    # Read the data
+    DATA_DIR = os.environ["DATA_DIR"]
+    X, y = batch_load(DATA_DIR, {"Facebook": "Meta", "Microsoft": "Microsoft", "Apple": "Apple"}, output_size=(36,36), output_format=EmojiOutputFormat.grayscale)
+    # Transform y
+    y = map_y(y)
+    
+    # Preprocessing the input data
+    # Normalize input vector
+    X = X/ 255.0
+    return X,y
+
+def RGB_and_PCA_load():
+    # Read the data
+    DATA_DIR = os.environ["DATA_DIR"]
+    X, y = batch_load(DATA_DIR, {"Facebook": "Meta", "Microsoft": "Microsoft", "Apple": "Apple"}, output_size=(72,72), output_format=EmojiOutputFormat.RGB)
+    # Transform y
+    y = map_y(y)
+    
+    # Preprocessing the input data
+    # Normalize input vector
+    X = X/ 255.0
+
+    pca = decomposition.PCA(36*36)
+    X = pca.fit_transform(X)
+    return X,y
+
+# Change how you want the data loo like
+X,y = RGB_and_PCA_load()
+# X,y = grayscale_and_resize_load()
 
 X_new = X.copy()
 y_new = y.copy()
@@ -53,8 +76,8 @@ with tqdm(total=len(C)*len(Gamma)) as bar:
             y_pred = model.predict(X_test)
             res["C"] = c
             res["gamma"] = gamma
-            res["accuracy"] = metrics.accuracy_score(y_test, y_pred)
-            res["confusion matrix"] = metrics.confusion_matrix(y_test,y_pred)
+            res["accuracy"] = str(metrics.accuracy_score(y_test, y_pred))
+            res["confusion matrix"] = str(metrics.confusion_matrix(y_test,y_pred))
             test_para_res.append(res)
             bar.update()
 
