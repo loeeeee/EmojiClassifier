@@ -1,4 +1,5 @@
 from sklearn import svm, metrics
+import logging
 import settings
 from main import batch_load, map_y
 from emoji import Emoji, EmojiOutputFormat
@@ -8,8 +9,12 @@ import os
 import json
 from tqdm import tqdm
 from sklearn import metrics, decomposition
+import multiprocessing
+from multiprocessing import Lock, Process, Queue, current_process
+import time
+import queue # imported for using queue.Empty exception
 
-
+logger = logging.getLogger(__name__)
 def grayscale_and_resize_load():
     # Read the data
     DATA_DIR = os.environ["DATA_DIR"]
@@ -37,9 +42,11 @@ def RGB_and_PCA_load():
     X = pca.fit_transform(X)
     return X,y
 
+logger.info("Start loading data")
 # Change how you want the data loo like
 X,y = RGB_and_PCA_load()
 # X,y = grayscale_and_resize_load()
+logger.info("Finish loading data")
 
 X_new = X.copy()
 y_new = y.copy()
@@ -63,23 +70,65 @@ y_train = y[:num_of_train]
 X_test = X[num_of_train:]
 y_test = y[num_of_train:]
 
-test_para_res = []
 C = [pow(10,i) for i in range(-10, 10, 1)]
 Gamma = [pow(10,i) for i in range(-10, 10, 1)]
 
-with tqdm(total=len(C)*len(Gamma)) as bar:
-    for c in C:
-        for gamma in Gamma:
+def do_job(tasks_to_accomplish, tasks_that_are_done, X_train, y_train, X_test):
+    while True:
+        try:
+            '''
+                try to get task from the queue. get_nowait() function will 
+                raise queue.Empty exception if the queue is empty. 
+                queue(False) function would do the same task also.
+            '''
+            task = tasks_to_accomplish.get_nowait()
+        except queue.Empty:
+
+            break
+        else:
+            '''
+                if no exception has been raised, add the task completion 
+                message to task_that_are_done queue
+            '''
+            c = task[0]
+            gamma = task[1]
+
+            logger.info("Process start fitting svm")
             res = {}
-            model = svm.SVC(cache_size=2000, C=c, gamma=gamma)
+            model = svm.SVC(cache_size=400, C=c, gamma=gamma)
             model.fit(X_train, y_train)
             y_pred = model.predict(X_test)
             res["C"] = c
             res["gamma"] = gamma
             res["accuracy"] = str(metrics.accuracy_score(y_test, y_pred))
             res["confusion matrix"] = str(metrics.confusion_matrix(y_test,y_pred))
-            test_para_res.append(res)
-            bar.update()
+
+            tasks_that_are_done.put(res)
+    return True
+
+number_of_processes = int(multiprocessing.cpu_count()/2)
+tasks_to_accomplish = Queue()
+tasks_that_are_done = Queue()
+processes = []
+for c in C:
+    for gamma in Gamma:
+        tasks_to_accomplish.put([c,gamma])
+
+# creating processes
+logger.info("Creating process!")
+for w in range(number_of_processes):
+    p = Process(target=do_job, args=(tasks_to_accomplish, tasks_that_are_done, X_train, y_train, X_test))
+    processes.append(p)
+    p.start()
+# completing process
+logger.info("Waiting process!")
+for p in processes:
+    p.join()
+# print the output
+test_para_res = []
+logger.info("Saving result!")
+while not tasks_that_are_done.empty():
+    test_para_res.append(tasks_that_are_done.get())
 
 file = open(os.path.join(DATA_DIR, "SVM_parameter_and_result.json"), "w", encoding="utf-8")
 json.dump(test_para_res, file, indent=4)
