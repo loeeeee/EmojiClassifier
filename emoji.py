@@ -16,8 +16,12 @@ class EmojiOutputFormat:
     def RGB(image):
         return image.convert(mode="RGB")
 
+    @staticmethod
+    def RGBA(image):
+        return image.convert(mode="RGBA")
+
 class Emoji:
-    def __init__(self, data_folder: str, company_name: str="", output_size: tuple=(0,0), output_format= EmojiOutputFormat.original):
+    def __init__(self, data_folder: str, company_name: str="", output_size: tuple=(0,0), output_format= EmojiOutputFormat.original,resize_mode: int=0):
         """
         Takes an company name as an input, load the data from .data folder. The company name is default to the data folder name.
         """
@@ -26,7 +30,8 @@ class Emoji:
         self.pic_file_names = self._load()
         self.output_size = output_size
         self.post_process = output_format
-
+        self.resize_mode = resize_mode
+        
         self._index: int = 0
     
     # API
@@ -56,7 +61,7 @@ class Emoji:
             # Returns ARGB value
         else:
             # Resize before return
-            pixels = np.array(list(im.resize(self.output_size).getdata()))                
+            pixels = np.array(list(im.resize(self.output_size, mode=self.resize_mode).getdata()))                
             # Returns ARGB value
         return pixels, self.pic_file_names[self._index - 1]
 

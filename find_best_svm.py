@@ -27,6 +27,21 @@ def grayscale_and_resize_load():
     X = X/ 255.0
     return X,y
 
+def grayscale_enlarge_and_shrink():
+    # Read the data
+    DATA_DIR = os.environ["DATA_DIR"]
+    X, y = batch_load(DATA_DIR, {"Facebook": "Meta", "Microsoft": "Microsoft", "Apple": "Apple"}, output_size=(288,288), output_format=EmojiOutputFormat.grayscale)
+    # Transform y
+    y = map_y(y)
+    
+    # Preprocessing the input data
+    # Normalize input vector
+    X = X/ 255.0
+
+    pca = decomposition.PCA(36*36)
+    X = pca.fit_transform(X)
+    return X,y
+
 def RGB_and_PCA_load():
     # Read the data
     DATA_DIR = os.environ["DATA_DIR"]
@@ -70,8 +85,8 @@ y_train = y[:num_of_train]
 X_test = X[num_of_train:]
 y_test = y[num_of_train:]
 
-C = [pow(10,i) for i in range(-10, 10, 1)]
-Gamma = [pow(10,i) for i in range(-10, 10, 1)]
+C = [pow(10,i) for i in range(-10, 10, 2)]
+Gamma = [pow(10,i) for i in range(-10, 10, 2)]
 
 def do_job(tasks_to_accomplish, tasks_that_are_done, X_train, y_train, X_test):
     while True:
@@ -93,11 +108,15 @@ def do_job(tasks_to_accomplish, tasks_that_are_done, X_train, y_train, X_test):
             c = task[0]
             gamma = task[1]
 
+            start_time = time.time()
+            print(f"SVM with c: {c}, gamma: {gamma} start")
             logger.info("Process start fitting svm")
             res = {}
-            model = svm.SVC(cache_size=400, C=c, gamma=gamma)
+            model = svm.SVC(cache_size=2000, C=c, gamma=gamma)
             model.fit(X_train, y_train)
             y_pred = model.predict(X_test)
+            print(f"SVM with c: {c}, gamma: {gamma} finish")
+            print(f"Using {time.time() - start_time}")
             res["C"] = c
             res["gamma"] = gamma
             res["accuracy"] = str(metrics.accuracy_score(y_test, y_pred))
@@ -106,7 +125,7 @@ def do_job(tasks_to_accomplish, tasks_that_are_done, X_train, y_train, X_test):
             tasks_that_are_done.put(res)
     return True
 
-number_of_processes = int(multiprocessing.cpu_count()/2)
+number_of_processes = int(multiprocessing.cpu_count())
 tasks_to_accomplish = Queue()
 tasks_that_are_done = Queue()
 processes = []
@@ -115,6 +134,7 @@ for c in C:
         tasks_to_accomplish.put([c,gamma])
 
 # creating processes
+print("Create process")
 logger.info("Creating process!")
 for w in range(number_of_processes):
     p = Process(target=do_job, args=(tasks_to_accomplish, tasks_that_are_done, X_train, y_train, X_test))
