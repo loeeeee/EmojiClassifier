@@ -1,7 +1,7 @@
 from sklearn import svm, metrics
 import logging
 import settings
-from main import batch_load, map_y
+from helper import *
 from emoji import Emoji, EmojiOutputFormat
 import numpy as np
 import random
@@ -15,90 +15,6 @@ import time
 import queue # imported for using queue.Empty exception
 
 logger = logging.getLogger(__name__)
-
-def grayscale_and_resize_load():
-    # Read the data
-    DATA_DIR = os.environ["DATA_DIR"]
-    X, y = batch_load(DATA_DIR, {"Facebook": "Meta", "Microsoft": "Microsoft", "Apple": "Apple"}, output_size=(36,36), output_format=EmojiOutputFormat.grayscale)
-    # Transform y
-    y = map_y(y)
-    
-    # Preprocessing the input data
-    # Normalize input vector
-    X = X/ 255.0
-    return X,y
-
-def grayscale_and_resize_load_small():
-    # Read the data
-    DATA_DIR = os.environ["DATA_DIR"]
-    X, y = batch_load(DATA_DIR, {"Facebook": "Meta", "Microsoft": "Microsoft", "Apple": "Apple"}, output_size=(18,18), output_format=EmojiOutputFormat.grayscale)
-    # Transform y
-    y = map_y(y)
-    
-    # Preprocessing the input data
-    # Normalize input vector
-    X = X/ 255.0
-    return X,y
-
-def grayscale_enlarge_and_shrink():
-    # Read the data
-    DATA_DIR = os.environ["DATA_DIR"]
-    X, y = batch_load(DATA_DIR, {"Facebook": "Meta", "Microsoft": "Microsoft", "Apple": "Apple"}, output_size=(288,288), output_format=EmojiOutputFormat.grayscale)
-    # Transform y
-    y = map_y(y)
-    
-    # Preprocessing the input data
-    # Normalize input vector
-    X = X/ 255.0
-
-    pca = decomposition.PCA(36*36)
-    X = pca.fit_transform(X)
-    return X,y
-
-def RGB_and_PCA_load():
-    # Read the data
-    DATA_DIR = os.environ["DATA_DIR"]
-    X, y = batch_load(DATA_DIR, {"Facebook": "Meta", "Microsoft": "Microsoft", "Apple": "Apple"}, output_size=(72,72), output_format=EmojiOutputFormat.RGB)
-    # Transform y
-    y = map_y(y)
-    
-    # Preprocessing the input data
-    # Normalize input vector
-    X = X/ 255.0
-
-    pca = decomposition.PCA(36*36)
-    X = pca.fit_transform(X)
-    return X,y
-
-def RGBA_enlarge_and_shrink():
-    # Read the data
-    DATA_DIR = os.environ["DATA_DIR"]
-    X, y = batch_load(DATA_DIR, {"Facebook": "Meta", "Microsoft": "Microsoft", "Apple": "Apple"}, output_size=(144,144), output_format=EmojiOutputFormat.RGBA)
-    # Transform y
-    y = map_y(y)
-    
-    # Preprocessing the input data
-    # Normalize input vector
-    X = X/ 255.0
-
-    pca = decomposition.PCA(36*36)
-    X = pca.fit_transform(X)
-    return X,y
-
-def RGBA_enlarge_and_shrink_large():
-    # Read the data
-    DATA_DIR = os.environ["DATA_DIR"]
-    X, y = batch_load(DATA_DIR, {"Facebook": "Meta", "Microsoft": "Microsoft", "Apple": "Apple"}, output_size=(216,216), output_format=EmojiOutputFormat.RGBA)
-    # Transform y
-    y = map_y(y)
-    
-    # Preprocessing the input data
-    # Normalize input vector
-    X = X/ 255.0
-
-    pca = decomposition.PCA(36*36)
-    X = pca.fit_transform(X)
-    return X,y
 
 logger.info("Start loading data")
 # Change how you want the data loo like
