@@ -9,6 +9,14 @@ This is a course project for STATS 302. We want to classify the pictures of emoj
 - Run settings.py. It will create necessary config and data folder for you.
 - Extract the three emoji compressed file into the newly created .data folder.
 - Change the name of the folder to *Microsoft, Meta, Apple*.
+    - The folder structure: 
+
+    --- .data
+        --- Meta
+          --- [images]
+        --- Microsoft
+        --- Apple                      
+                             
 - **or** *(Advance)* Change the batch loading function inside helper function to point it to the location you want to.
 - The environment is now set up
 - Sorry for unable to provide a requirements.txt, but I did not use any wired package.
