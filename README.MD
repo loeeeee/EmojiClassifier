@@ -11,11 +11,11 @@ This is a course project for STATS 302. We want to classify the pictures of emoj
 - Change the name of the folder to *Microsoft, Meta, Apple*.
     - The folder structure: 
 
-    --- .data
-        --- Meta
-          --- [images]
-        --- Microsoft
-        --- Apple                      
+          --- .data
+              --- Meta
+                --- [images]
+              --- Microsoft
+              --- Apple              
                              
 - **or** *(Advance)* Change the batch loading function inside helper function to point it to the location you want to.
 - The environment is now set up
